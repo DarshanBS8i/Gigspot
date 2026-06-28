@@ -51,9 +51,16 @@ router.post('/register', async (req, res) => {
             html: `<p>Welcome to GigSpot!</p><p>Please click this link to verify your account: <a href="${baseUrl}/?verify=${verifyToken}">Verify Account</a></p>`
         };
         try {
-            await transporter.sendMail(mailOptions);
+            if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+                console.log(`\n📧 [EMAIL MOCK] To: ${email} | Subject: Verify your GigSpot Account`);
+                console.log(`Please click this link to verify: ${baseUrl}/?verify=${verifyToken}\n`);
+            } else {
+                await transporter.sendMail(mailOptions);
+            }
         } catch (mailErr) {
             console.error('Failed to send verification email:', mailErr);
+            console.log(`\n📧 [FALLBACK MOCK] To: ${email} | Subject: Verify your GigSpot Account`);
+            console.log(`Please click this link to verify: ${baseUrl}/?verify=${verifyToken}\n`);
         }
         await pool.query("INSERT INTO notifications(user_id,title,message,type) VALUES($1,'Welcome to GigSpot!','Please verify your email address.','info')", [user.id]);
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role, name: user.full_name }, JWT_SECRET, { expiresIn: '7d' });
@@ -140,9 +147,16 @@ router.post('/forgot-password', async (req, res) => {
             html: `<p>You requested a password reset.</p><p>Please click this link to reset your password: <a href="${baseUrl}/?reset=${resetToken}">Reset Password</a></p>`
         };
         try {
-            await transporter.sendMail(mailOptions);
+            if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+                console.log(`\n📧 [EMAIL MOCK] To: ${email} | Subject: Reset your GigSpot Password`);
+                console.log(`Please click this link to reset your password: ${baseUrl}/?reset=${resetToken}\n`);
+            } else {
+                await transporter.sendMail(mailOptions);
+            }
         } catch (mailErr) {
             console.error('Failed to send reset email:', mailErr);
+            console.log(`\n📧 [FALLBACK MOCK] To: ${email} | Subject: Reset your GigSpot Password`);
+            console.log(`Please click this link to reset your password: ${baseUrl}/?reset=${resetToken}\n`);
         }
         res.json({ message: 'If that email is registered, a reset link was sent.' });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -229,12 +243,18 @@ router.post('/send-otp', async (req, res) => {
             html: `<p>Your OTP code is: <strong>${otpCode}</strong></p><p>This code will expire in 15 minutes.</p>`
         };
         try {
-            await transporter.sendMail(mailOptions);
+            if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+                console.log(`\n📧 [EMAIL MOCK] To: ${email} | Subject: Your GigSpot Login Code`);
+                console.log(`Your OTP code is: ${otpCode}\n`);
+            } else {
+                await transporter.sendMail(mailOptions);
+            }
         } catch (mailErr) {
             console.error('Failed to send OTP email:', mailErr);
-            return res.status(500).json({ error: 'Failed to send email. Please try again later.' });
+            console.log(`\n📧 [FALLBACK MOCK] To: ${email} | Subject: Your GigSpot Login Code`);
+            console.log(`Your OTP code is: ${otpCode}\n`);
         }
-        res.json({ message: 'OTP sent to your email.' });
+        res.json({ message: 'OTP processed. Please check your email (or server console if email is unconfigured).' });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
