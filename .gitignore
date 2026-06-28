@@ -1,0 +1,6 @@
+node_modules/
+.env
+db/gigspot.db
+db/gigspot.db-wal
+db/gigspot.db-shm
+.DS_Store

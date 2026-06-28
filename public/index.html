@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GigSpot — Find & Post Part-Time Jobs</title>
+    <meta name="description" content="GigSpot connects part-time job providers with available workers. Post gigs, find opportunities, all on a live map.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<!-- ============ TOAST NOTIFICATION ============ -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- ============ LANDING PAGE ============ -->
+<div id="page-landing" class="page active">
+    <nav class="landing-nav">
+        <div class="nav-brand"><span class="brand-icon">📍</span> GigSpot</div>
+        <div class="nav-actions">
+            <button class="btn btn-ghost" onclick="showPage('login')">Sign In</button>
+            <button class="btn btn-primary" onclick="showPage('register')">Get Started</button>
+        </div>
+    </nav>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🚀 India's Smart Gig Platform</div>
+            <h1>Find Part-Time<br><span class="gradient-text">Jobs Near You</span></h1>
+            <p class="hero-subtitle">Post gigs or find work instantly. Jobs and workers pinned live on a map. Built for India's gig economy.</p>
+            <div class="hero-ctas">
+                <button class="btn btn-primary btn-lg" onclick="startRegister('worker')">
+                    <span>🔍</span> Find Work
+                </button>
+                <button class="btn btn-secondary btn-lg" onclick="startRegister('provider')">
+                    <span>📋</span> Post a Job
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><span id="stat-jobs">0</span><label>Open Jobs</label></div>
+                <div class="stat"><span id="stat-workers">0</span><label>Workers</label></div>
+                <div class="stat"><span id="stat-providers">0</span><label>Providers</label></div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-map-preview" id="hero-map"></div>
+        </div>
+    </section>
+    <section class="features-section">
+        <h2>Why <span class="gradient-text">GigSpot</span>?</h2>
+        <div class="features-grid">
+            <div class="feature-card"><div class="feature-icon">🗺️</div><h3>Live Map View</h3><p>See jobs and workers pinned on a real map. Find opportunities near you instantly.</p></div>
+            <div class="feature-card"><div class="feature-icon">⚡</div><h3>Instant Matching</h3><p>Apply to jobs in one tap. Providers get notified immediately.</p></div>
+            <div class="feature-card"><div class="feature-icon">⭐</div><h3>Ratings & Reviews</h3><p>Build trust with a mutual review system after every gig.</p></div>
+            <div class="feature-card"><div class="feature-icon">💬</div><h3>Direct Messaging</h3><p>Chat directly with providers or workers before and during a gig.</p></div>
+            <div class="feature-card"><div class="feature-icon">🔔</div><h3>Smart Notifications</h3><p>Stay updated on applications, new jobs, and messages.</p></div>
+            <div class="feature-card"><div class="feature-icon">🔒</div><h3>Secure Auth</h3><p>JWT-based authentication. Your data stays safe.</p></div>
+        </div>
+    </section>
+</div>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div id="page-login" class="page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <button class="btn-back" onclick="showPage('landing')">← Back</button>
+            <div class="auth-header">
+                <div class="brand-icon-lg">📍</div>
+                <h2>Welcome Back</h2>
+                <p>Sign in to your GigSpot account</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" id="login-btn">Sign In</button>
+                <div style="text-align:center;margin-top:12px">
+                    <a href="#" onclick="showForgotPasswordModal()" style="font-size:13px;color:var(--text2)">Forgot password?</a>
+                </div>
+                <div style="margin:20px 0;text-align:center;position:relative">
+                    <hr style="border-color:var(--border);margin:0">
+                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--glass);padding:0 10px;font-size:12px;color:var(--text2)">OR</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-full" onclick="showOtpLoginModal()">📩 Sign in with Gmail (OTP)</button>
+            </form>
+            <div class="auth-footer">
+                Don't have an account? <a href="#" onclick="showPage('register')">Create one</a>
+            </div>
+            <div class="demo-credentials">
+                <p><strong>Demo Accounts:</strong></p>
+                <div class="demo-row"><span>Provider:</span> <code>provider@demo.com</code> / <code>demo1234</code></div>
+                <div class="demo-row"><span>Worker:</span> <code>worker@demo.com</code> / <code>demo1234</code></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ REGISTER PAGE ============ -->
+<div id="page-register" class="page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <button class="btn-back" onclick="showPage('landing')">← Back</button>
+            <div class="auth-header">
+                <div class="brand-icon-lg">📍</div>
+                <h2>Join GigSpot</h2>
+                <p>Create your account to get started</p>
+            </div>
+            <div class="role-toggle">
+                <button class="role-btn active" data-role="worker" onclick="selectRole('worker')">🔍 I'm a Worker</button>
+                <button class="role-btn" data-role="provider" onclick="selectRole('provider')">📋 I'm a Provider</button>
+            </div>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <input type="hidden" id="register-role" value="worker">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="register-name" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="register-email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="register-phone" placeholder="+91-XXXXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" placeholder="Min 6 characters" required minlength="6">
+                </div>
+                <div id="provider-fields" class="hidden">
+                    <div class="form-group">
+                        <label>Company / Business Name</label>
+                        <input type="text" id="register-company" placeholder="Your business name">
+                    </div>
+                </div>
+                <div id="worker-fields">
+                    <div class="form-group">
+                        <label>Skills (comma separated)</label>
+                        <input type="text" id="register-skills" placeholder="Delivery, Cooking, Cleaning">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" id="register-btn">Create Account</button>
+                <div style="margin:20px 0;text-align:center;position:relative">
+                    <hr style="border-color:var(--border);margin:0">
+                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--glass);padding:0 10px;font-size:12px;color:var(--text2)">OR</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-full" onclick="showOtpLoginModal()">📩 Sign up with Gmail (OTP)</button>
+            </form>
+            <div class="auth-footer">
+                Already have an account? <a href="#" onclick="showPage('login')">Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="page-dashboard" class="page">
+    <nav class="dashboard-nav">
+        <div class="nav-brand" onclick="showDashboardView('overview')"><span class="brand-icon">📍</span> GigSpot</div>
+        <div class="nav-links">
+            <button class="nav-link active" data-view="overview" onclick="showDashboardView('overview')">Dashboard</button>
+            <button class="nav-link" data-view="map" onclick="showDashboardView('map')">🗺️ Map</button>
+            <button class="nav-link" data-view="jobs" onclick="showDashboardView('jobs')" id="nav-jobs-label">Jobs</button>
+            <button class="nav-link" data-view="applications" onclick="showDashboardView('applications')">Applications</button>
+            <button class="nav-link" data-view="notifications" onclick="showDashboardView('notifications')">
+                🔔 <span id="notif-badge" class="badge hidden">0</span>
+            </button>
+        </div>
+        <div class="nav-user" onclick="toggleUserDropdown(event)">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-dropdown" id="user-dropdown">
+                <button onclick="showDashboardView('profile')">👤 Profile</button>
+                <button onclick="handleLogout()">🚪 Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <div id="view-overview" class="dash-view active">
+        <div class="dash-header">
+            <h1 id="greeting">Welcome back!</h1>
+            <p id="role-subtitle"></p>
+        </div>
+        <div class="stats-grid" id="dash-stats"></div>
+        <div class="dash-columns">
+            <div class="dash-col">
+                <h3>📋 Recent Jobs</h3>
+                <div id="recent-jobs-list" class="card-list"></div>
+            </div>
+            <div class="dash-col">
+                <h3 id="activity-title">📊 Recent Activity</h3>
+                <div id="recent-activity" class="card-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP VIEW -->
+    <div id="view-map" class="dash-view">
+        <div class="map-toolbar">
+            <h2>🗺️ Live Map</h2>
+            <div class="map-filters">
+                <select id="map-filter-category" onchange="refreshMap()">
+                    <option value="">All Categories</option>
+                </select>
+                <label class="toggle-label">
+                    <input type="checkbox" id="map-show-workers" onchange="refreshMap()" checked> Show Workers
+                </label>
+                <label class="toggle-label">
+                    <input type="checkbox" id="map-show-jobs" onchange="refreshMap()" checked> Show Jobs
+                </label>
+            </div>
+        </div>
+        <div id="main-map" class="map-container"></div>
+    </div>
+
+    <!-- JOBS VIEW -->
+    <div id="view-jobs" class="dash-view">
+        <div class="view-header">
+            <h2 id="jobs-view-title">Jobs</h2>
+            <div class="view-actions">
+                <input type="text" id="job-search" class="search-input" placeholder="Search jobs..." oninput="searchJobs()">
+                <select id="job-filter-cat" onchange="loadJobs()"><option value="">All Categories</option></select>
+                <button class="btn btn-primary" id="btn-post-job" onclick="showPostJobModal()" style="display:none">+ Post Job</button>
+            </div>
+        </div>
+        <div id="jobs-list" class="jobs-grid"></div>
+    </div>
+
+    <!-- APPLICATIONS VIEW -->
+    <div id="view-applications" class="dash-view">
+        <div class="view-header"><h2 id="apps-title">My Applications</h2></div>
+        <div id="applications-list" class="card-list"></div>
+    </div>
+
+    <!-- NOTIFICATIONS VIEW -->
+    <div id="view-notifications" class="dash-view">
+        <div class="view-header">
+            <h2>Notifications</h2>
+            <button class="btn btn-ghost" onclick="markAllRead()">Mark all read</button>
+        </div>
+        <div id="notifications-list" class="card-list"></div>
+    </div>
+
+    <!-- PROFILE VIEW -->
+    <div id="view-profile" class="dash-view">
+        <div class="view-header"><h2>My Profile</h2></div>
+        <div class="profile-card" id="profile-content"></div>
+    </div>
+</div>
+
+<!-- ============ JOB DETAIL MODAL ============ -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<!-- ============ POST JOB MODAL ============ -->
+<div id="post-job-overlay" class="modal-overlay hidden" onclick="closePostJobModal()">
+    <div class="modal-content modal-lg" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closePostJobModal()">✕</button>
+        <h2>Post a New Job</h2>
+        <form id="post-job-form" onsubmit="handlePostJob(event)">
+            <div class="form-row">
+                <div class="form-group"><label>Job Title *</label><input type="text" id="pj-title" required placeholder="e.g. Delivery Partner Needed"></div>
+                <div class="form-group"><label>Category</label><select id="pj-category"></select></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea id="pj-description" rows="3" placeholder="Describe the job..."></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label>Pay Rate (₹) *</label><input type="number" id="pj-pay" required min="1"></div>
+                <div class="form-group"><label>Pay Type</label><select id="pj-paytype"><option value="hourly">Per Hour</option><option value="daily">Per Day</option><option value="fixed">Fixed</option></select></div>
+                <div class="form-group"><label>Slots</label><input type="number" id="pj-slots" value="1" min="1"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Location Name *</label><input type="text" id="pj-location" required placeholder="Area, City"></div>
+                <div class="form-group"><label>Urgency</label><select id="pj-urgency"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="low">Low</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Start Time</label><input type="time" id="pj-start-time"></div>
+                <div class="form-group"><label>End Time</label><input type="time" id="pj-end-time"></div>
+            </div>
+            <div class="form-group">
+                <label>📍 Click on map to set job location</label>
+                <div id="pj-map" style="height:200px;border-radius:12px;margin-top:8px;"></div>
+                <input type="hidden" id="pj-lat"><input type="hidden" id="pj-lng">
+            </div>
+            <div class="form-group"><label>Requirements</label><textarea id="pj-requirements" rows="2" placeholder="Any specific requirements..."></textarea></div>
+            <button type="submit" class="btn btn-primary btn-full">Post Job</button>
+        </form>
+    </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD MODAL ============ -->
+<div id="forgot-password-overlay" class="modal-overlay hidden" onclick="closeForgotPasswordModal()">
+    <div class="modal-content" style="max-width:400px" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeForgotPasswordModal()">✕</button>
+        <h2 style="margin-bottom:16px">Reset Password</h2>
+        <p style="color:var(--text2);font-size:14px;margin-bottom:24px">Enter your email and we will send you a link to reset your password.</p>
+        <form onsubmit="handleForgotPassword(event)">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="fp-email" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Send Reset Link</button>
+        </form>
+    </div>
+</div>
+
+<!-- ============ RESET PASSWORD MODAL ============ -->
+<div id="reset-password-overlay" class="modal-overlay hidden" onclick="closeResetPasswordModal()">
+    <div class="modal-content" style="max-width:400px" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeResetPasswordModal()">✕</button>
+        <h2 style="margin-bottom:16px">Set New Password</h2>
+        <form onsubmit="handleResetPassword(event)">
+            <input type="hidden" id="rp-token">
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="rp-password" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Reset Password</button>
+        </form>
+    </div>
+</div>
+
+<!-- ============ OTP LOGIN MODAL ============ -->
+<div id="otp-login-overlay" class="modal-overlay hidden" onclick="closeOtpLoginModal()">
+    <div class="modal-content" style="max-width:400px" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeOtpLoginModal()">✕</button>
+        <h2 style="margin-bottom:16px">Sign in with Gmail (OTP)</h2>
+        <div id="otp-step-1">
+            <p style="color:var(--text2);font-size:14px;margin-bottom:24px">Enter your Gmail address to receive a secure login code.</p>
+            <form onsubmit="handleSendOtp(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="otp-email" required placeholder="you@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Your Name (if new user)</label>
+                    <input type="text" id="otp-name" placeholder="Leave blank if returning">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Send Login Code</button>
+            </form>
+        </div>
+        <div id="otp-step-2" class="hidden">
+            <p style="color:var(--text2);font-size:14px;margin-bottom:24px">Enter the 6-digit code sent to your email.</p>
+            <form onsubmit="handleVerifyOtp(event)">
+                <div class="form-group">
+                    <label>6-Digit Code</label>
+                    <input type="text" id="otp-code" required placeholder="123456" pattern="\\d{6}" maxlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Verify & Log In</button>
+                <div style="text-align:center;margin-top:12px">
+                    <a href="#" onclick="showOtpStep1()" style="font-size:13px;color:var(--text2)">← Back to email</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
