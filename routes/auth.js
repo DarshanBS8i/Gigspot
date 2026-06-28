@@ -272,7 +272,7 @@ router.post('/verify-otp', async (req, res) => {
         
         if (new Date(user.otp_expires) < new Date()) return res.status(400).json({ error: 'OTP has expired' });
         
-        await pool.query('UPDATE users SET otp_code=NULL, otp_expires=NULL, email_verified=1, last_login=NOW() WHERE id=$1', [user.id]);
+        await pool.query('UPDATE users SET otp_code=NULL, otp_expires=NULL, email_verified=TRUE, last_login=NOW() WHERE id=$1', [user.id]);
         
         let profile = null;
         if (user.role === 'provider') { const p = await pool.query('SELECT * FROM provider_profiles WHERE user_id=$1', [user.id]); profile = p.rows[0]; }
