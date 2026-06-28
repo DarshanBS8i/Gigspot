@@ -56,12 +56,10 @@ GigSpot is a dynamic web app bridging local freelancers with businesses needing 
    ```
    The application will be running at `http://localhost:3000`.
 
-### Vercel Deployment
+### Live Demo
 
-This project is fully configured for Vercel deployment via the included `vercel.json` file.
-1. Import this repository into Vercel.
-2. Add the environment variables listed above in the Vercel Dashboard.
-3. Deploy!
+This project is fully deployed and accessible online!
+**Check it out here:** [GigSpot Live on Vercel](https://gigspot-ashen.vercel.app)
 
 ## License
 
