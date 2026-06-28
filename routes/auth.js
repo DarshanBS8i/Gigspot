@@ -123,7 +123,7 @@ router.post('/verify-email', async (req, res) => {
     try {
         const { token } = req.body;
         if (!token) return res.status(400).json({ error: 'Token required' });
-        const r = await pool.query('UPDATE users SET email_verified=1, verification_token=NULL WHERE verification_token=$1 RETURNING id', [token]);
+        const r = await pool.query('UPDATE users SET email_verified=TRUE, verification_token=NULL WHERE verification_token=$1 RETURNING id', [token]);
         if (r.rows.length === 0) return res.status(400).json({ error: 'Invalid or expired token' });
         res.json({ message: 'Email verified successfully!' });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -195,7 +195,7 @@ router.post('/google-login', async (req, res) => {
             // Register new Google user
             const chosenRole = role || 'worker';
             const hash = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10); // Random password
-            const u = await client.query('INSERT INTO users(email,password_hash,full_name,avatar_url,role,email_verified) VALUES($1,$2,$3,$4,$5,1) RETURNING id,email,full_name,role', [email, hash, full_name, avatar_url||null, chosenRole]);
+            const u = await client.query('INSERT INTO users(email,password_hash,full_name,avatar_url,role,email_verified) VALUES($1,$2,$3,$4,$5,TRUE) RETURNING id,email,full_name,role', [email, hash, full_name, avatar_url||null, chosenRole]);
             user = u.rows[0];
             if (chosenRole === 'provider') await client.query('INSERT INTO provider_profiles(user_id,company_name) VALUES($1,$2)', [user.id, full_name]);
             else await client.query('INSERT INTO worker_profiles(user_id,skills) VALUES($1,$2)', [user.id, '[]']);
