@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url      TEXT,
     is_active       BOOLEAN DEFAULT TRUE,
     email_verified  BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    reset_token     VARCHAR(255),
+    reset_token_expires TIMESTAMP,
+    otp_code        VARCHAR(10),
+    otp_expires     TIMESTAMP,
     last_login      TIMESTAMP,
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW()
