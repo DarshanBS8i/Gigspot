@@ -354,7 +354,7 @@
             <form onsubmit="handleVerifyOtp(event)">
                 <div class="form-group">
                     <label>6-Digit Code</label>
-                    <input type="text" id="otp-code" required placeholder="123456" pattern="\\d{6}" maxlength="6">
+                    <input type="text" id="otp-code" required placeholder="123456" pattern="[0-9]{6}" maxlength="6">
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Verify & Log In</button>
                 <div style="text-align:center;margin-top:12px">
