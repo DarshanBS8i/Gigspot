@@ -140,9 +140,33 @@ async function initDashboard() {
     bjp.style.display = currentUser.role === 'provider' ? 'inline-flex' : 'none';
     document.getElementById('nav-jobs-label').textContent = currentUser.role === 'provider' ? 'My Jobs' : 'Browse Jobs';
     document.getElementById('apps-title').textContent = currentUser.role === 'provider' ? 'Received Applications' : 'My Applications';
+    
+    const availCont = document.getElementById('availability-container');
+    if (currentUser.role === 'worker') {
+        availCont.style.display = 'flex';
+        document.getElementById('worker-status-select').value = currentProfile.availability_status || 'available';
+    } else {
+        availCont.style.display = 'none';
+    }
+    
     await loadCategories();
     showDashboardView('overview');
     loadNotifBadge();
+}
+
+async function updateWorkerStatus(e) {
+    const newStatus = e.target.value;
+    try {
+        await api('/api/workers/status', {
+            method: 'PUT',
+            body: JSON.stringify({ availability_status: newStatus })
+        });
+        toast('Status updated successfully', 'success');
+        if (currentProfile) currentProfile.availability_status = newStatus;
+    } catch (err) {
+        toast('Failed to update status: ' + err.message, 'error');
+        if (currentProfile) e.target.value = currentProfile.availability_status || 'available';
+    }
 }
 
 async function loadCategories() {

@@ -61,7 +61,10 @@ router.put('/:id/status', auth, async (req, res) => {
         if (app.rows[0].provider_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
         await pool.query('UPDATE applications SET status=$1 WHERE id=$2', [status, req.params.id]);
         if (status === 'accepted') {
-            await pool.query('UPDATE jobs SET filled_slots=filled_slots+1 WHERE id=$1', [app.rows[0].job_id]);
+            const jobUpdate = await pool.query('UPDATE jobs SET filled_slots=filled_slots+1 WHERE id=$1 RETURNING slots, filled_slots', [app.rows[0].job_id]);
+            if (jobUpdate.rows[0].filled_slots >= jobUpdate.rows[0].slots) {
+                await pool.query('UPDATE jobs SET status=$1 WHERE id=$2', ['in_progress', app.rows[0].job_id]);
+            }
         }
         await pool.query("INSERT INTO notifications(user_id,title,message,type,reference_id,reference_type) VALUES($1,$2,$3,'application',$4,'application')",
             [app.rows[0].worker_id, `Application ${status}`, `Your application for "${app.rows[0].title}" was ${status}`, req.params.id]);

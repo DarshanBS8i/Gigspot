@@ -173,6 +173,14 @@
                 🔔 <span id="notif-badge" class="badge hidden">0</span>
             </button>
         </div>
+        <div id="availability-container" style="display:none; margin-right: 20px; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text2);">Status:</span>
+            <select id="worker-status-select" onchange="updateWorkerStatus(event)" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; background: var(--surface); color: var(--text);">
+                <option value="available">🟢 Available</option>
+                <option value="busy">🟡 Busy</option>
+                <option value="offline">🔴 Offline</option>
+            </select>
+        </div>
         <div class="nav-user" onclick="toggleUserDropdown(event)">
             <div class="user-avatar" id="user-avatar">U</div>
             <div class="user-dropdown" id="user-dropdown">
